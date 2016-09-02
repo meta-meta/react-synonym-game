@@ -37,20 +37,19 @@ export default class App extends Component {
     this.setState({
       textboxVal: textboxVal,
       // synonyms: this.state.synonyms,
-    })
+    });
   }
 
   render() {
     return (
       <div>
-        <h1>Sup, Christ!</h1>
-        <Synonym value={{val: 123123, guessed: true}} />
+        <h1>Sup, William!</h1>
         <h2>{this.state.targetWord}</h2>
         <input type="text"
                value={this.state.textboxVal}
                onChange={this.handleTextChange}/>
         {
-          this.state.synonyms.map((synonym) => <Synonym value={synonym} />)
+          this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
         }
       </div>
     );
