@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import Synonym from './Synonym'
+import Synonym from './Synonym';
 
 export default class App extends Component {
   constructor() {
@@ -39,6 +39,24 @@ export default class App extends Component {
       // synonyms: this.state.synonyms,
     });
   }
+  
+  handleReset = () => {
+    // new target word
+    const newTargetWord = 'butt';
+    
+    // new array of synonyms
+    const newSynonyms = ['rear', 'rump', 'backend', 'behind']
+      .map(newSynonym => ({
+        val: newSynonym,
+        guessed: false
+      }));
+      
+    this.setState({
+      textboxVal: '',
+      targetWord: newTargetWord,
+      synonyms: newSynonyms
+    });
+  }
 
   render() {
     return (
@@ -51,6 +69,7 @@ export default class App extends Component {
         {
           this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
         }
+        <button onClick={this.handleReset}>reset</button>
       </div>
     );
   }
