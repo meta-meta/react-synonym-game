@@ -104,9 +104,14 @@ export default class App extends Component {
                  onChange={this.handleTextChange}/>
         <div style={style}>
           <h2>{this.state.targetWord}</h2>
-          {
-            this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
-          }
+          <ul style={{
+            padding: '20px',
+            columnCount: 5
+          }}>
+            {
+              this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
+            }
+          </ul>
         </div>
         <button onClick={this.handleReset}>reset</button>
       </div>
