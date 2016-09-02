@@ -24,20 +24,36 @@ export default class App extends Component {
       textboxVal: 'initial value',
     };
   }
-
+  
   handleTextChange = (evt) => {
     const textboxVal = evt.target.value;
 
+    // this mutates the underlying state object
+    // but we're not telling React that it updated so we need either
+    // forceUpdate() or the this.setState below
     this.state.synonyms.forEach((synonym) => {
       if(synonym.val == textboxVal) {
         synonym.guessed = true;
       }
     });
-
+    
     this.setState({
       textboxVal: textboxVal,
       // synonyms: this.state.synonyms,
     });
+    
+    // if all synonyms have been guessed, reset
+    let allGuessed = true;
+    
+    this.state.synonyms.forEach((synonym) => {
+      return allGuessed = allGuessed && synonym.guessed;
+    });
+
+    if(allGuessed) {
+      this.handleReset();
+    }
+
+
   }
   
   handleReset = () => {
