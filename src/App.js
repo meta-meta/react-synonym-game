@@ -122,7 +122,8 @@ export default class App extends Component {
                 padding: '20px',
                 columnCount: 'auto',
                 columnGap: '4em',
-                columnFill:'balance'
+                columnFill:'balance',
+                fontFamily: 'monospace', // prevent reflow when typing
               }}>
                 {
                   this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
