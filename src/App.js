@@ -4,31 +4,23 @@ import Synonym from './Synonym';
 
 const transitionMillis = 2000;
 const APIkey = '1c44ea7d9e42228c85869e55a72fad44';
-const url = `https://words.bighugelabs.com/api/2/${APIkey}`;
+const synonymUrl = `http://words.bighugelabs.com/api/2/${APIkey}`;
+const newWordUrl = 'http://www.setgetgo.com/randomword/get.php';
 
 export default class App extends Component {
   constructor() {
     super();
     this.state = {
-      targetWord: 'big',
-      synonyms: [
-        {
-          val: 'huge',
-          guessed: false,
-        },
-        {
-          val: 'large',
-          guessed: true,
-        },
-        {
-          val: 'grand',
-          guessed: false,
-        }
-      ],
+      targetWord: '',
+      synonyms: [],
       score: 0,
       textboxVal: '',
       gameOpacity: 1,
     };
+  }
+  
+  componentWillMount() {
+    this.handleReset();
   }
   
   handleTextChange = (evt) => {
@@ -48,8 +40,6 @@ export default class App extends Component {
       }
     });
     
-
-    
     // if all synonyms have been guessed, reset
     let allGuessed = true;
     
@@ -65,11 +55,20 @@ export default class App extends Component {
   }
   
   handleReset = () => {
-    // new target word
-    const newTargetWord = 'butt';
-    axios.get(`${url}/${newTargetWord}/json`)
+    axios.get(newWordUrl)
     .then((result) => {
-      // new array of synonyms
+      return result.data; //newTargetWord
+    })
+    .then((newTargetWord) => {
+      this.setState({targetWord: newTargetWord});
+      return newTargetWord; // the return value gets wrapped in a Promise so we can once again call then()
+    })
+    .catch((error) => {
+      console.log('fetch new word:', error);
+      return Promise.reject('failed to fetch new word. no need to hit the thesaurus API') // this will cause the subsequent then()s to not get called and instead skip to the next catch()
+    })
+    .then((newTargetWord) => axios.get(`${synonymUrl}/${newTargetWord}/json`))
+    .then((result) => {
       const newSynonyms = result.data.noun.syn
         .map(newSynonym => ({
           val: newSynonym,
@@ -78,19 +77,21 @@ export default class App extends Component {
         
       this.setState({
         textboxVal: '',
-        targetWord: newTargetWord,
+        guessedWordBox: [],
         synonyms: newSynonyms,
         gameOpacity: 1
       });
     })
     .catch((error) => {
-      console.log(error);
+      console.log('fetch synonyms:', error);
+      setTimeout(this.handleReset, 1000); // try again in a second
+      // one reason we get an error is that the new target word might not exist in big huge thesaurus
     });
-    
   }
 
   render() {
     const style = {
+      fontSize:'18px',
       opacity: this.state.gameOpacity,
       transition: transitionMillis + 'ms',
       cursor: 'move'
@@ -98,20 +99,38 @@ export default class App extends Component {
     
     return (
       <div>
-        <h1>Sup, William!</h1>
-        <input type="text"
-                 value={this.state.textboxVal}
-                 onChange={this.handleTextChange}/>
+        <h1 style={{textAlign:'center'}}>Sup, William!</h1>
+        <div style={{
+                      textAlign: 'center',
+                      margin: '0 auto',
+                      
+                    }}>
+         <input type="text"
+                    value={this.state.textboxVal}
+                     onChange={this.handleTextChange}/>        
+        </div>
+        
+   
         <div style={style}>
-          <h2>{this.state.targetWord}</h2>
-          <ul style={{
-            padding: '20px',
-            columnCount: 5
+          <h3 style={{textAlign:'center'}}>Find synonyms for <div style={{fontSize:'30px', color:'#F2639C'}}>{this.state.targetWord}</div></h3>
+          <div style={{
+          border:'2px solid #eee',
+          maxWidth:'40%',
           }}>
-            {
-              this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
-            }
-          </ul>
+            <ul style={{
+                listStyle:'none',
+                padding: '20px',
+                columnCount: 'auto',
+                columnGap: '4em',
+                columnFill:'balance'
+              }}>
+                {
+                  this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
+                }
+            </ul>
+          </div>
+   
+
         </div>
         <button onClick={this.handleReset}>reset</button>
       </div>

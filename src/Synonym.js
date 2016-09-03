@@ -7,6 +7,7 @@ export default class Synonym extends Component {
   render() {
     const style = {
       margin: '10px',
+     display:'inline-flex'
     };
     
     const display = this.props.value.val
