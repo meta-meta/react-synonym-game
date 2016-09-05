@@ -17,3 +17,7 @@ ul{
   border-radius: 20px;
   transition:1s;
 }
+input{
+  font-size: 24px;
+  padding-bottom: 5px;
+}

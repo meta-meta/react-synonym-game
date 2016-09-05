@@ -60,11 +60,10 @@ export default class App extends Component {
   handleReset = () => {
     this.setState({
       textboxVal: '',
-      guessedWordBox: [],
       synonyms: [],
       gameOpacity: 1,
       listFont:0,
-      listFontColor:'#D3EDED'
+      listFontColor:'#964747'
     });
     const wordLength = Math.floor(Math.random() * (6-4)+3); //6 is max word length and 3 min
 
@@ -90,6 +89,7 @@ export default class App extends Component {
         }));
         this.setState({synonyms:newSynonyms});
         this.setState({listFont: '25px'});
+        setTimeout(()=>this.setState({listFontColor:'#D3EDED'}),1000);
 
 
     })
@@ -98,11 +98,11 @@ export default class App extends Component {
       setTimeout(this.handleReset, 1000); // try again in a second
       // one reason we get an error is that the new target word might not exist in big huge thesaurus
     });
-    setTimeout(this.setState({listFontColor:'#D3EDED'}),1000)
   }
 
   render() {
     const style = {
+
       textAlign:'center',
       fontSize:'25px',
       opacity: this.state.gameOpacity,
