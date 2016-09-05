@@ -38,6 +38,7 @@ export default class App extends Component {
     this.state.synonyms.forEach((synonym) => {
       if((synonym.val == textboxVal) && !synonym.guessed) {
         synonym.guessed = true;
+        this.setState({score: this.state.score + 1})
         this.setState({textboxVal:''});
       }
     });
@@ -52,6 +53,7 @@ export default class App extends Component {
       this.setState({gameOpacity: 0});
       setTimeout(this.handleReset, transitionMillis);
     }
+
 
   }
 
