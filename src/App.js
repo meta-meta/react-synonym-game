@@ -16,20 +16,22 @@ export default class App extends Component {
       score: 0,
       textboxVal: '',
       gameOpacity: 1,
-    };
+      listFont:0,
+      listFontColor:'#964747'
+        };
   }
-  
+
   componentWillMount() {
     this.handleReset();
   }
-  
+
   handleTextChange = (evt) => {
     const textboxVal = evt.target.value;
     this.setState({
       textboxVal: textboxVal,
       // synonyms: this.state.synonyms,
     });
-    
+
     // this mutates the underlying state object
     // but we're not telling React that it updated so we need either
     // forceUpdate() or the this.setState below
@@ -39,10 +41,9 @@ export default class App extends Component {
         this.setState({textboxVal:''});
       }
     });
-    
     // if all synonyms have been guessed, reset
     let allGuessed = true;
-    
+
     this.state.synonyms.forEach((synonym) => {
       return allGuessed = allGuessed && synonym.guessed;
     });
@@ -53,9 +54,20 @@ export default class App extends Component {
     }
 
   }
-  
+
   handleReset = () => {
-    axios.get(newWordUrl)
+    this.setState({
+      textboxVal: '',
+      guessedWordBox: [],
+      synonyms: [],
+      gameOpacity: 1,
+      listFont:0,
+      listFontColor:'#D3EDED'
+    });
+    const wordLength = Math.floor(Math.random() * (6-4)+3); //6 is max word length and 3 min
+
+    console.log(wordLength)
+    axios.get(newWordUrl+"?len="+wordLength)
     .then((result) => {
       return result.data; //newTargetWord
     })
@@ -74,66 +86,77 @@ export default class App extends Component {
           val: newSynonym,
           guessed: false
         }));
-        
-      this.setState({
-        textboxVal: '',
-        guessedWordBox: [],
-        synonyms: newSynonyms,
-        gameOpacity: 1
-      });
+        this.setState({synonyms:newSynonyms});
+        this.setState({listFont: '25px'});
+
+
     })
     .catch((error) => {
       console.log('fetch synonyms:', error);
       setTimeout(this.handleReset, 1000); // try again in a second
       // one reason we get an error is that the new target word might not exist in big huge thesaurus
     });
+    setTimeout(this.setState({listFontColor:'#D3EDED'}),1000)
   }
 
   render() {
     const style = {
-      fontSize:'18px',
+      textAlign:'center',
+      fontSize:'25px',
       opacity: this.state.gameOpacity,
       transition: transitionMillis + 'ms',
-      cursor: 'move'
+      cursor: 'default'
     };
-    
+
     return (
-      <div>
-        <h1 style={{textAlign:'center'}}>Sup, William!</h1>
+      <div className="main">
+      <h3 className="score"> Score: {this.state.score} </h3>
+
+
+
+
         <div style={{
                       textAlign: 'center',
                       margin: '0 auto',
-                      
+
                     }}>
+
+         <h3 style={{textAlign:'center'}}>Find synonyms for <div style={{fontSize:'30px', color:'#964747'}}>{this.state.targetWord}</div></h3>
          <input type="text"
+                    style={{marginBottom:'20px'}}
                     value={this.state.textboxVal}
-                     onChange={this.handleTextChange}/>        
+                     onChange={this.handleTextChange}/>
+        <button style={{
+                         marginLeft:'10px',
+                         background:'none',
+                         border:'solid 2px #757B7D',
+                         color:'#757B7D',
+                         padding:'8px',
+                         cursor:'pointer',
+                         outline:'none',
+                         borderRadius: '20px',
+
+                      }}
+                onClick={this.handleReset}>New Word</button>
         </div>
-        
-   
+
+
         <div style={style}>
-          <h3 style={{textAlign:'center'}}>Find synonyms for <div style={{fontSize:'30px', color:'#F2639C'}}>{this.state.targetWord}</div></h3>
           <div style={{
-          border:'2px solid #eee',
           maxWidth:'40%',
+          display:'inline-block'
           }}>
-            <ul style={{
-                listStyle:'none',
-                padding: '20px',
-                columnCount: 'auto',
-                columnGap: '4em',
-                columnFill:'balance',
-                fontFamily: 'monospace', // prevent reflow when typing
-              }}>
+            <ul style={{fontSize:this.state.listFont, color:this.state.listFontColor}}>
                 {
                   this.state.synonyms.map((synonym) => <Synonym value={synonym} inputVal={this.state.textboxVal} />)
                 }
             </ul>
+
           </div>
-   
+
+
 
         </div>
-        <button onClick={this.handleReset}>reset</button>
       </div>
     );
   }

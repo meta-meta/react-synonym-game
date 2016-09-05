@@ -1,0 +1,19 @@
+.main{
+  font-family: 'Fira Mono', monospace;
+
+}
+.score{
+  font-size: 30px;
+  position: absolute;
+  margin-left: 15%;
+}
+ul{
+  background-color:#964747;
+  list-style:none;
+  padding: 20px;
+  column-count:auto;
+  column-gap: 4em;
+  column-fill: balance;
+  border-radius: 20px;
+  transition:1s;
+}
