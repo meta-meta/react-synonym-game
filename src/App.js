@@ -1,32 +1,42 @@
-import React, {Component} from 'react';
+import React, {
+  Component
+}
+from 'react';
 import axios from 'axios';
 import Synonym from './Synonym';
 
 const transitionMillis = 2000;
-const APIkey = '1c44ea7d9e42228c85869e55a72fad44';
-const synonymUrl = `http://words.bighugelabs.com/api/2/${APIkey}`;
-const newWordUrl = 'http://www.setgetgo.com/randomword/get.php';
 
 export default class App extends Component {
   constructor() {
     super();
     this.state = {
+      apiKey: '',
       targetWord: '',
+      exampleSentence: 'this is an example sentence',
+      definition: 'this is the definition',
       synonyms: [],
       score: 0,
       textboxVal: '',
       gameOpacity: 1,
-      listFont:0,
-      listFontColor:'#964747'
-        };
+      listFont: 0,
+      listFontColor: '#964747'
+    };
   }
 
   componentWillMount() {
-    this.handleReset();
+    //this.handleReset();
   }
 
   handleTextChange = (evt) => {
     const textboxVal = evt.target.value;
+    
+    if(!this.state.apiKey) {
+      this.setState({apiKey: textboxVal});
+      setTimeout(this.handleReset, 0);
+      return;
+    }
+    
     this.setState({
       textboxVal: textboxVal,
       // synonyms: this.state.synonyms,
@@ -36,10 +46,14 @@ export default class App extends Component {
     // but we're not telling React that it updated so we need either
     // forceUpdate() or the this.setState below
     this.state.synonyms.forEach((synonym) => {
-      if((synonym.val == textboxVal) && !synonym.guessed) {
+      if ((synonym.val == textboxVal) && !synonym.guessed) {
         synonym.guessed = true;
-        this.setState({score: this.state.score + 1})
-        this.setState({textboxVal:''});
+        this.setState({
+          score: this.state.score + 1
+        });
+        this.setState({
+          textboxVal: ''
+        });
       }
     });
     // if all synonyms have been guessed, reset
@@ -49,8 +63,10 @@ export default class App extends Component {
       return allGuessed = allGuessed && synonym.guessed;
     });
 
-    if(allGuessed) {
-      this.setState({gameOpacity: 0});
+    if (allGuessed) {
+      this.setState({
+        gameOpacity: 0
+      });
       setTimeout(this.handleReset, transitionMillis);
     }
 
@@ -62,49 +78,58 @@ export default class App extends Component {
       textboxVal: '',
       synonyms: [],
       gameOpacity: 1,
-      listFont:0,
-      listFontColor:'#964747'
+      listFont: 0,
+      listFontColor: '#964747'
     });
-    const wordLength = Math.floor(Math.random() * (6-4)+3); //6 is max word length and 3 min
 
-    console.log(wordLength)
-    axios.get(newWordUrl+"?len="+wordLength)
-    .then((result) => {
-      return result.data; //newTargetWord
-    })
-    .then((newTargetWord) => {
-      this.setState({targetWord: newTargetWord});
-      return newTargetWord; // the return value gets wrapped in a Promise so we can once again call then()
-    })
-    .catch((error) => {
-      console.log('fetch new word:', error);
-      return Promise.reject('failed to fetch new word. no need to hit the thesaurus API') // this will cause the subsequent then()s to not get called and instead skip to the next catch()
-    })
-    .then((newTargetWord) => axios.get(`${synonymUrl}/${newTargetWord}/json`))
-    .then((result) => {
-      const newSynonyms = result.data.noun.syn
-        .map(newSynonym => ({
-          val: newSynonym,
-          guessed: false
-        }));
-        this.setState({synonyms:newSynonyms});
-        this.setState({listFont: '25px'});
+
+    axios.get('https://wordsapiv1.p.mashape.com/words/', {
+        headers: {
+          'X-Mashape-Authorization': this.state.apiKey
+        },
+        params: {
+          random: 'true',
+          hasDetails: 'synonyms,examples'
+        }
+      })
+      .then(({ data }) => {
+        console.log(data);
+
+        const wordData = data.results
+          .filter(o => o.synonyms)
+          .sort((a, b) => b.synonyms.length - a.synonyms.length)[0];
+
+        const {
+          examples,
+          definition,
+          synonyms
+        } = wordData;
+
+
+        this.setState({
+          targetWord: data.word,
+          exampleSentence: examples && examples[0],
+          definition,
+          listFont: '25px',
+          synonyms: synonyms.map(newSynonym => ({
+            val: newSynonym,
+            guessed: false
+          }))
+        });
+        
         setTimeout(()=>this.setState({listFontColor:'#D3EDED'}),1000);
 
-
-    })
-    .catch((error) => {
-      console.log('fetch synonyms:', error);
-      setTimeout(this.handleReset, 1000); // try again in a second
-      // one reason we get an error is that the new target word might not exist in big huge thesaurus
-    });
+      })
+      .catch((err) => {
+        console.log('error', err);
+      });
   }
 
   render() {
     const style = {
 
-      textAlign:'center',
-      fontSize:'25px',
+      textAlign: 'center',
+      fontSize: '25px',
       opacity: this.state.gameOpacity,
       transition: transitionMillis + 'ms',
       cursor: 'default'
@@ -124,6 +149,8 @@ export default class App extends Component {
                     }}>
 
          <h3 style={{textAlign:'center'}}>Find synonyms for <div style={{fontSize:'30px', color:'#964747'}}>{this.state.targetWord}</div></h3>
+         <h6 style={{textAlign:'center'}}>{this.state.exampleSentence || this.state.definition}</h6>
+         <h6> </h6>
          <input type="text"
                     style={{marginBottom:'20px'}}
                     value={this.state.textboxVal}
@@ -139,7 +166,7 @@ export default class App extends Component {
                          borderRadius: '20px',
 
                       }}
-                onClick={this.handleReset}>New Word</button>
+                onClick={this.handleReset}>{this.state.apiKey ? 'New Word' : 'Set API Key'}</button>
         </div>
 
 
